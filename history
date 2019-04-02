@@ -44,4 +44,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/
 cat ~/.kube/config
 kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
 kubectl cluster-info
+
+
+adress
 https://api.olrudenko.tk/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/pod/kube-system/kubernetes-dashboard-5dd89b9875-hcvtt?namespace=_all
