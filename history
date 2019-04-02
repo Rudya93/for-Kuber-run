@@ -1,0 +1,47 @@
+#kubectl
+curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+kubectl
+
+
+#kops
+curl -Lo kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+chmod +x ./kops
+sudo mv ./kops /usr/local/bin/
+export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"
+export KOPS_FEATURE_FLAGS=AlphaAllowGCE # to unlock the GCE features
+export KOPS_STATE_STORE=gs://kubernetes-cluster10/
+export EDITOR=nano
+PROJECT=`gcloud config get-value project`
+export name=simple.k8s.local
+
+#gcloud
+echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+sudo apt-get update && sudo apt-get install google-cloud-sdk
+gcloud init
+gsutil ls
+
+
+#helm
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > get_helm.sh
+chmod 700 get_helm.sh
+./get_helm.sh
+kubectl -n kube-system create serviceaccount tiller
+kubectl create clusterrolebinding tiller \
+ --clusterrole cluster-admin \
+ --serviceaccount=kube-system:tiller
+helm init --service-account tiller
+
+
+#kuber
+kubectl apply -f acc.yaml
+kubectl apply -f svc.yaml
+kubectl apply -f ingr.yaml
+kubectl apply -f ingr1.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
+cat ~/.kube/config
+kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
+kubectl cluster-info
+https://api.olrudenko.tk/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/pod/kube-system/kubernetes-dashboard-5dd89b9875-hcvtt?namespace=_all
